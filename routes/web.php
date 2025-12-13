@@ -35,5 +35,28 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
+Route::middleware(['auth'])->group(function () {
+
+    // Listar
+    Route::get('/clientes', function () {
+        return Inertia::render('Clientes/Index');
+    });
+
+    // Crear
+    Route::get('/clientes/create', function () {
+        return Inertia::render('Clientes/Create');
+    });
+
+    // Editar
+    Route::get('/clientes/{id}/edit', function ($id) {
+        return Inertia::render('Clientes/Edit', ['id' => $id]);
+    });
+
+
+    Route::get('/articulos', function () {
+        return Inertia::render('Articulos/Index');
+    });
+
+});
 
 require __DIR__.'/auth.php';
