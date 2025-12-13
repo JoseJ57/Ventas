@@ -22,3 +22,4 @@ use App\Http\Controllers\ArticuloController;
 
 Route::get('articulos/form-data', [ArticuloController::class, 'formData']);
 Route::apiResource('articulos', ArticuloController::class);
+Route::apiResource('clientes', ClienteController::class);
