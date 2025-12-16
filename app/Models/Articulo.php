@@ -26,19 +26,23 @@ class Articulo extends Model
     ];
 
     //fk muchos a uno
-    public function secciones_personal()
+    public function tipo_articulo()
     {
-        return $this->belongsTo(Secciones_personal::class,'seccion_id');
+        return $this->belongsTo(Tipo_articulo::class,'tipo_articulo_id');
     }
 
-    public function subsecc()
+    public function marca()
     {
-        return $this->belongsTo(Sub_secciones::class,'subsecc_id');
+        return $this->belongsTo(Marca::class,'marca_id');
     }
     //FK uno a muchos
-    public function funcionarios()
+    public function talla_articulo()
     {
-        return $this->hasMany(Funcionarios::class,'cargo_id');
+        return $this->hasMany(Talla_Articulo::class,'talla_articulo_id');
+    }
+    public function material_articulo()
+    {
+        return $this->hasMany(Material_Articulo::class,'material_articulo_id');
     }
 
     //scopes and functions

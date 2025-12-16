@@ -6,15 +6,15 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-class Tipo_articulo_material extends Model
+class Material_Articulo extends Model
 {
     use HasFactory, SoftDeletes;
 
-    protected $table = 'tipo_articulo_material';
+    protected $table = 'material_articulo';
 
     protected $fillable = [
         'material_id',
-        'tipo_articulo_id',
+        'articulo_id',
     ];
 
     //fk muchos a uno
@@ -23,8 +23,9 @@ class Tipo_articulo_material extends Model
         return $this->belongsTo(Material::class,'material_id');
     }
 
-    public function tipo_articulo()
+    public function articulo()
     {
-        return $this->belongsTo(Tipo_articulo::class,'tipo_articulo_id');
+        return $this->belongsTo(Articulo::class,'articulo_id');
     }
+
 }

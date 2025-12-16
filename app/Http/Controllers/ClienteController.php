@@ -4,91 +4,120 @@ namespace App\Http\Controllers;
 
 use App\Models\Cliente;
 use Illuminate\Http\Request;
+use Inertia\Inertia;
 
 class ClienteController extends Controller
 {
     /**
-     * Mostrar todos los clientes.
+     * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $clientes = Cliente::all();
-        return response()->json($clientes, 200);
+        $search = $request->input('search');
+
+        $clientes = Cliente::query()
+            ->when($search, function ($query, $search) {
+                $query->where('nombre', 'like', "%{$search}%")
+                      ->orWhere('apellido', 'like', "%{$search}%")
+                      ->orWhere('celular', 'like', "%{$search}%");
+            })
+            ->orderBy('created_at', 'desc')
+            ->paginate(15)
+            ->withQueryString();
+
+        return Inertia::render('Clientes/Index', [
+            'clientes' => $clientes,
+            'filters' => [
+                'search' => $search
+            ]
+        ]);
     }
 
     /**
-     * Crear un nuevo cliente.
+     * Show the form for creating a new resource.
+     */
+    public function create()
+    {
+        return Inertia::render('Clientes/Create');
+    }
+
+    /**
+     * Store a newly created resource in storage.
      */
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'nombre'    => 'required|string|max:100',
-            'apellido'  => 'required|string|max:100',
-            'celular'   => 'required|string|max:20',
-            'frecuente' => 'boolean'
+            'nombre' => 'required|string|max:255',
+            'apellido' => 'required|string|max:255',
+            'celular' => 'required|string|max:20',
+            'frecuente' => 'boolean',
+        ], [
+            'nombre.required' => 'El nombre es obligatorio.',
+            'apellido.required' => 'El apellido es obligatorio.',
+            'celular.required' => 'El celular es obligatorio.',
         ]);
 
-        $cliente = Cliente::create($validated);
+        Cliente::create($validated);
 
-        return response()->json([
-            'message' => 'Cliente creado correctamente',
-            'data'    => $cliente
-        ], 201);
+        return redirect()->route('clientes.index')
+            ->with('success', 'Cliente creado exitosamente.');
     }
 
     /**
-     * Mostrar un cliente específico.
+     * Display the specified resource.
      */
-    public function show($id)
+    public function show(Cliente $cliente)
     {
-        $cliente = Cliente::find($id);
-
-        if (!$cliente) {
-            return response()->json(['message' => 'Cliente no encontrado'], 404);
-        }
-
-        return response()->json($cliente, 200);
+        return Inertia::render('Clientes/Show', [
+            'cliente' => $cliente
+        ]);
     }
 
     /**
-     * Actualizar un cliente.
+     * Show the form for editing the specified resource.
      */
-    public function update(Request $request, $id)
+    public function edit(Cliente $cliente)
     {
-        $cliente = Cliente::find($id);
+        return Inertia::render('Clientes/Edit', [
+            'cliente' => $cliente
+        ]);
+    }
 
-        if (!$cliente) {
-            return response()->json(['message' => 'Cliente no encontrado'], 404);
-        }
-
+    /**
+     * Update the specified resource in storage.
+     */
+    public function update(Request $request, Cliente $cliente)
+    {
         $validated = $request->validate([
-            'nombre'    => 'string|max:100',
-            'apellido'  => 'string|max:100',
-            'celular'   => 'string|max:20',
-            'frecuente' => 'boolean'
+            'nombre' => 'required|string|max:255',
+            'apellido' => 'required|string|max:255',
+            'celular' => 'required|string|max:20',
+            'frecuente' => 'boolean',
+        ], [
+            'nombre.required' => 'El nombre es obligatorio.',
+            'apellido.required' => 'El apellido es obligatorio.',
+            'celular.required' => 'El celular es obligatorio.',
         ]);
 
         $cliente->update($validated);
 
-        return response()->json([
-            'message' => 'Cliente actualizado correctamente',
-            'data'    => $cliente
-        ], 200);
+        return redirect()->route('clientes.index')
+            ->with('success', 'Cliente actualizado exitosamente.');
     }
 
     /**
-     * Eliminar un cliente.
+     * Remove the specified resource from storage.
      */
-    public function destroy($id)
+    public function destroy(Cliente $cliente)
     {
-        $cliente = Cliente::find($id);
+        try {
+            $cliente->delete();
 
-        if (!$cliente) {
-            return response()->json(['message' => 'Cliente no encontrado'], 404);
+            return redirect()->route('clientes.index')
+                ->with('success', 'Cliente eliminado exitosamente.');
+        } catch (\Exception $e) {
+            return redirect()->route('clientes.index')
+                ->with('error', 'No se pudo eliminar el cliente. Puede estar asociado a otros registros.');
         }
-
-        $cliente->delete();
-
-        return response()->json(['message' => 'Cliente eliminado correctamente'], 200);
     }
 }
